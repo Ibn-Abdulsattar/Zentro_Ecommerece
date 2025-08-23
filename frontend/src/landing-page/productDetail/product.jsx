@@ -162,7 +162,7 @@ export default function Product() {
 
             {/* Actions */}
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              <Button
+              <Button href='/checkout'
                 variant="contained"
                 startIcon={<AddShoppingCart />}
                 sx={{

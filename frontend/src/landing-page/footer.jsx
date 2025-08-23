@@ -2,12 +2,6 @@ import React from "react";
 import { Box, Container, Grid, Typography, Link, IconButton, Divider } from "@mui/material";
 import { Facebook, Twitter, Instagram, LinkedIn, YouTube } from "@mui/icons-material";
 
-/**
- * Footer component for the e-commerce website.
- * - Uses MUI Grid for responsive layout
- * - Dynamically maps navigation and social links (not hardcoded)
- * - Follows the Universal E-Commerce color scheme provided
- */
 const footerLinks = {
   company: ["About Us", "Careers", "Press", "Blog"],
   support: ["Help Center", "Returns", "Shipping", "Contact Us"],

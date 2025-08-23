@@ -112,7 +112,7 @@ export default function Banner() {
                 >
                   {banner.description}
                 </Typography>
-                <Button
+                <Button href='/productListing'
                   variant="contained"
                   sx={{
                     bgcolor: "#F97316",
