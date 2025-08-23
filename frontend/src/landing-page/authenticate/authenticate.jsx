@@ -40,7 +40,6 @@ function Authenticate({ open, onClose }) {
     setError(null);
   };
 
-
   const handleChange = (e) =>
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   const handleClickShowPassword = () => setShowPassword((prev) => !prev);
@@ -107,7 +106,8 @@ function Authenticate({ open, onClose }) {
   return (
     <div>
       <Modal
-        open={open} onClose={onClose}
+        open={open}
+        onClose={onClose}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >

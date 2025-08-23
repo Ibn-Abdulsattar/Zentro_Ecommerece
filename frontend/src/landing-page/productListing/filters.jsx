@@ -11,7 +11,13 @@ import {
   AccordionDetails,
   Divider,
 } from "@mui/material";
-import { ExpandMore, Star, Category, BrandingWatermark, MonetizationOn } from "@mui/icons-material";
+import {
+  ExpandMore,
+  Star,
+  Category,
+  BrandingWatermark,
+  MonetizationOn,
+} from "@mui/icons-material";
 
 const categories = [
   "All",
@@ -58,9 +64,9 @@ export default function Filters({
       </Box>
 
       {/* Category */}
-      <Accordion defaultExpanded sx={{py:2}}>
+      <Accordion defaultExpanded sx={{ py: 2 }}>
         <AccordionSummary expandIcon={<ExpandMore />}>
-          <Category sx={{ mr: 1, color: "#F97316", }} />
+          <Category sx={{ mr: 1, color: "#F97316" }} />
           <Typography fontWeight={600}>Category</Typography>
         </AccordionSummary>
         <AccordionDetails>
@@ -78,7 +84,7 @@ export default function Filters({
       <Divider />
 
       {/* Brand */}
-      <Accordion sx={{py:2}}>
+      <Accordion sx={{ py: 2 }}>
         <AccordionSummary expandIcon={<ExpandMore />}>
           <BrandingWatermark sx={{ mr: 1, color: "#F97316" }} />
           <Typography fontWeight={600}>Brand</Typography>
@@ -98,7 +104,7 @@ export default function Filters({
       <Divider />
 
       {/* Price */}
-      <Accordion sx={{py:2}}>
+      <Accordion sx={{ py: 2 }}>
         <AccordionSummary expandIcon={<ExpandMore />}>
           <MonetizationOn sx={{ mr: 1, color: "#F97316" }} />
           <Typography fontWeight={600}>Price Range</Typography>
@@ -112,7 +118,9 @@ export default function Filters({
             max={2000}
             sx={{
               color: "#F97316",
-              "& .MuiSlider-thumb:hover": { boxShadow: "0 0 0 8px rgba(249,115,22,0.2)" },
+              "& .MuiSlider-thumb:hover": {
+                boxShadow: "0 0 0 8px rgba(249,115,22,0.2)",
+              },
             }}
           />
         </AccordionDetails>
@@ -120,7 +128,7 @@ export default function Filters({
       <Divider />
 
       {/* Rating */}
-      <Accordion sx={{py:2}}>
+      <Accordion sx={{ py: 2 }}>
         <AccordionSummary expandIcon={<ExpandMore />}>
           <Star sx={{ mr: 1, color: "#1E40AF" }} />
           <Typography fontWeight={600}>Minimum Rating</Typography>
@@ -135,7 +143,9 @@ export default function Filters({
             step={0.5}
             sx={{
               color: "#1E40AF",
-              "& .MuiSlider-thumb:hover": { boxShadow: "0 0 0 8px rgba(30,64,175,0.2)" },
+              "& .MuiSlider-thumb:hover": {
+                boxShadow: "0 0 0 8px rgba(30,64,175,0.2)",
+              },
             }}
           />
         </AccordionDetails>

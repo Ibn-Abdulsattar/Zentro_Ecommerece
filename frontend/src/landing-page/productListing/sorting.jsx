@@ -11,7 +11,7 @@ import {
 
 export default function Sorting({ sortBy, handleSortChange }) {
   return (
-    <Box sx={{ my: { xs: 4 } }} >
+    <Box sx={{ my: { xs: 4 } }}>
       {/* Sorting Section */}
       <Typography
         variant="h6"

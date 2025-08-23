@@ -69,7 +69,11 @@ const CartPage = () => {
 
                   {/* Product Details */}
                   <Grid size={{ xs: 3 }}>
-                    <Typography variant="subtitle1" color='#1E40AF' fontWeight={600}>
+                    <Typography
+                      variant="subtitle1"
+                      color="#1E40AF"
+                      fontWeight={600}
+                    >
                       {item.name}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
@@ -107,7 +111,12 @@ const CartPage = () => {
                       onClick={() => removeItem(item.id)}
                       size="small"
                     >
-                      <DeleteIcon sx={{ color: "#F97316", '&:hover':{color:"#c3570aff"} }} />
+                      <DeleteIcon
+                        sx={{
+                          color: "#F97316",
+                          "&:hover": { color: "#c3570aff" },
+                        }}
+                      />
                     </IconButton>
                   </Grid>
                 </Grid>
@@ -173,7 +182,13 @@ const CartPage = () => {
               variant="contained"
               fullWidth
               size="large"
-              sx={{ mt: 2, py: 1.5, fontWeight: 600, bgcolor: "#F97316", '&:hover':{bgcolor:"#c3570aff"} }}
+              sx={{
+                mt: 2,
+                py: 1.5,
+                fontWeight: 600,
+                bgcolor: "#F97316",
+                "&:hover": { bgcolor: "#c3570aff" },
+              }}
             >
               Checkout
             </Button>

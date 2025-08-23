@@ -168,52 +168,55 @@ export default function SubProducts() {
         <Grid size={{ xs: 12, md: 9 }}>
           <Grid container spacing={3}>
             {filteredProducts.map((product) => (
-              <Grid
-                key={product.id}
-                size={{ xs: 12, sm: 6, md: 4,}}
-              >
-                <Link href = '/productDetail' sx={{textDecoration: "none"}}>
-                <Card
-                  sx={{
-                    borderRadius: 3,
-                    boxShadow: 4,
-                    transition: "0.3s",
-                    "&:hover": { boxShadow: 6, transform: "translateY(-4px)" },
-                  }}
-                >
-                  <CardMedia
-                    component="img"
-                    height="220"
-                    image={product.image}
-                    alt={product.title}
-                  />
-                  <CardContent>
-                    <Typography variant="subtitle1" fontWeight="bold">
-                      {product.title}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {product.brand}
-                    </Typography>
-                    <Typography variant="h6" color="#1E40AF">
-                      ${product.price}
-                    </Typography>
-                    <Typography variant="body2">⭐ {product.rating}</Typography>
-                  </CardContent>
-                  <CardActions>
-                    <Button href='/checkout'
-                      fullWidth
-                      variant="contained"
-                      sx={{
-                        bgcolor: "#F97316",
-                        borderRadius: 2,
-                        textTransform: "none",
-                        "&:hover": { bgcolor: "#cb5603" },
-                      }}
-                    >
-                      Add to Cart
-                    </Button>
-                  </CardActions>
-                </Card>
+              <Grid key={product.id} size={{ xs: 12, sm: 6, md: 4 }}>
+                <Link href="/productDetail" sx={{ textDecoration: "none" }}>
+                  <Card
+                    sx={{
+                      borderRadius: 3,
+                      boxShadow: 4,
+                      transition: "0.3s",
+                      "&:hover": {
+                        boxShadow: 6,
+                        transform: "translateY(-4px)",
+                      },
+                    }}
+                  >
+                    <CardMedia
+                      component="img"
+                      height="220"
+                      image={product.image}
+                      alt={product.title}
+                    />
+                    <CardContent>
+                      <Typography variant="subtitle1" fontWeight="bold">
+                        {product.title}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {product.brand}
+                      </Typography>
+                      <Typography variant="h6" color="#1E40AF">
+                        ${product.price}
+                      </Typography>
+                      <Typography variant="body2">
+                        ⭐ {product.rating}
+                      </Typography>
+                    </CardContent>
+                    <CardActions>
+                      <Button
+                        href="/checkout"
+                        fullWidth
+                        variant="contained"
+                        sx={{
+                          bgcolor: "#F97316",
+                          borderRadius: 2,
+                          textTransform: "none",
+                          "&:hover": { bgcolor: "#cb5603" },
+                        }}
+                      >
+                        Add to Cart
+                      </Button>
+                    </CardActions>
+                  </Card>
                 </Link>
               </Grid>
             ))}

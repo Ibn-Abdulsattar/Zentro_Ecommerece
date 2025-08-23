@@ -35,25 +35,25 @@ export default function Banner() {
 
   return (
     <Box
-        sx={{
-    "& .swiper-pagination": {
-      backgroundColor: "#3a3737ff", // background for the dots container
-      borderRadius: "8px",
-      bottom: "10px", // adjust position
-      width: "auto", // shrink to fit content
-      padding: .5, // horizontal padding inside
-      opacity: ".5",
-    },
-    "& .swiper-pagination-bullet": {
-     fontSize: "2rem", // dot color
-     backgroundColor: "#fdf9f9ff",
-     opacity:1
-    },
-    "& .swiper-pagination-bullet-active": {
-      backgroundColor: "#f96e03ff", // active dot color
-     opacity:1
-    },
-  }}
+      sx={{
+        "& .swiper-pagination": {
+          backgroundColor: "#3a3737ff", // background for the dots container
+          borderRadius: "8px",
+          bottom: "10px", // adjust position
+          width: "auto", // shrink to fit content
+          padding: 0.5, // horizontal padding inside
+          opacity: ".5",
+        },
+        "& .swiper-pagination-bullet": {
+          fontSize: "2rem", // dot color
+          backgroundColor: "#fdf9f9ff",
+          opacity: 1,
+        },
+        "& .swiper-pagination-bullet-active": {
+          backgroundColor: "#f96e03ff", // active dot color
+          opacity: 1,
+        },
+      }}
     >
       <Swiper
         spaceBetween={0}
@@ -112,7 +112,8 @@ export default function Banner() {
                 >
                   {banner.description}
                 </Typography>
-                <Button href='/productListing'
+                <Button
+                  href="/productListing"
                   variant="contained"
                   sx={{
                     bgcolor: "#F97316",

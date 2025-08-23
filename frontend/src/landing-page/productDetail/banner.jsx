@@ -22,12 +22,13 @@ export default function Banner() {
         sx={{
           position: "absolute",
           inset: 0,
-          background: "linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.7))",
+          background:
+            "linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.7))",
         }}
       />
 
       {/* Text Content */}
-      <Container sx={{ position: "relative",   }}>
+      <Container sx={{ position: "relative" }}>
         <Typography
           variant="h3"
           sx={{
@@ -37,7 +38,7 @@ export default function Banner() {
             textShadow: "2px 2px 10px rgba(0,0,0,0.6)",
           }}
         >
-           Product Overview
+          Product Overview
         </Typography>
         <Typography
           variant="h6"
@@ -47,7 +48,17 @@ export default function Banner() {
             textShadow: "1px 1px 6px rgba(0,0,0,0.6)",
           }}
         >
-          <Link href='/' sx={{'&:hover': {color: "#F97316",}, textDecoration: "none", color: "#fff"}}>Home</Link> / Product Detail
+          <Link
+            href="/"
+            sx={{
+              "&:hover": { color: "#F97316" },
+              textDecoration: "none",
+              color: "#fff",
+            }}
+          >
+            Home
+          </Link>{" "}
+          / Product Detail
         </Typography>
       </Container>
     </Box>

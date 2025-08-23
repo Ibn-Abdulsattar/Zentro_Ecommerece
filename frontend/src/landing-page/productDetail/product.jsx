@@ -39,7 +39,17 @@ export default function Product() {
 
   return (
     <Box sx={{ py: 12, px: { xs: 2, md: 8 }, bgcolor: "#fafafa" }}>
-      <Typography variant='h4' sx={{textAlign: " center",fontWeight: "800", mb: 7, color: "#1E40AF"}}>Overview & Features</Typography>
+      <Typography
+        variant="h4"
+        sx={{
+          textAlign: " center",
+          fontWeight: "800",
+          mb: 7,
+          color: "#1E40AF",
+        }}
+      >
+        Overview & Features
+      </Typography>
       <Grid container spacing={6}>
         {/* Left: Product Images */}
         <Grid size={{ xs: 12, md: 6 }}>
@@ -162,7 +172,8 @@ export default function Product() {
 
             {/* Actions */}
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              <Button href='/checkout'
+              <Button
+                href="/checkout"
                 variant="contained"
                 startIcon={<AddShoppingCart />}
                 sx={{

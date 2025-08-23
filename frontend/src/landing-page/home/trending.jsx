@@ -22,7 +22,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
-
+import { useNavigate } from "react-router-dom";
 // Dummy products
 const products = [
   {
@@ -73,84 +73,98 @@ const products = [
 ];
 
 // Reusable Card
-const TrendingCard = ({ p }) => (
-  <Card
-    sx={{
-      p: 2,
-      borderRadius: 3,
-      boxShadow: 2,
-      position: "relative",
-      transition: "0.3s",
-      "&:hover": { transform: "scale(1.02)", boxShadow: 5 },
-    }}
-  >
-    {/* Badge */}
-    <Chip
-      label="Trending"
-      size="small"
+const TrendingCard = ({ p }) => {
+  const navigate = useNavigate();
+
+  return (
+    <Card
       sx={{
-        position: "absolute",
-        top: 30,
-        left: 20,
-        bgcolor: "primary.main",
-        color: "#fff",
+        p: 2,
+        borderRadius: 3,
+        boxShadow: 2,
+        position: "relative",
+        transition: "0.3s",
+        "&:hover": { transform: "scale(1.02)", boxShadow: 5 },
       }}
-    />
+    >
+      {/* Badge */}
+      <Chip
+        label="Trending"
+        size="small"
+        sx={{
+          position: "absolute",
+          top: 30,
+          left: 20,
+          bgcolor: "primary.main",
+          color: "#fff",
+        }}
+      />
 
-    {/* Action Icons */}
-    <Box sx={{ position: "absolute", top: 12, right: 12 }}>
-      <IconButton size="small">
-        <FavoriteIcon color="error" />
-      </IconButton>
-      <IconButton size="small">
-        <VisibilityIcon color="primary" />
-      </IconButton>
-    </Box>
-
-    {/* Image */}
-    <CardMedia
-      component="img"
-      image={p.image}
-      alt={p.name}
-      sx={{ height: 200, borderRadius: 2 }}
-    />
-
-    {/* Content */}
-    <CardContent>
-      <Typography variant="h6">{p.name}</Typography>
-      <Typography color="primary" fontWeight="bold">
-        ${p.price}
-        <Typography
-          component="span"
-          sx={{
-            ml: 1,
-            textDecoration: "line-through",
-            color: "text.secondary",
-          }}
-        >
-          ${p.oldPrice}
-        </Typography>
-      </Typography>
-      <Typography variant="body2" color="text.secondary">
-        {p.desc}
-      </Typography>
-      <Typography sx={{ color: "gold", mt: 1 }}>
-        {"⭐".repeat(p.rating)}
-        {"☆".repeat(5 - p.rating)}
-      </Typography>
-
-      {/* Buttons */}
-      <Box sx={{ display: "flex", gap: 1, mt: 2 }}>
-        <Button href='/checkout' variant="contained" color="warning" fullWidth>
-          Add to Cart
-        </Button>
-        <Button variant="outlined" color="primary" fullWidth>
-          Buy Now
-        </Button>
+      {/* Action Icons */}
+      <Box sx={{ position: "absolute", top: 12, right: 12 }}>
+        <IconButton size="small">
+          <FavoriteIcon color="error" />
+        </IconButton>
+        <IconButton size="small">
+          <VisibilityIcon color="primary" />
+        </IconButton>
       </Box>
-    </CardContent>
-  </Card>
-);
+
+      {/* Image */}
+      <Box
+        sx={{ cursor: "pointer" }}
+        onClick={() => navigate("/productDetail")}
+      >
+        <CardMedia
+          component="img"
+          image={p.image}
+          alt={p.name}
+          sx={{ height: 200, borderRadius: 2 }}
+        />
+      </Box>
+
+      {/* Content */}
+      <CardContent>
+        <Typography variant="h6">{p.name}</Typography>
+        <Typography color="primary" fontWeight="bold">
+          ${p.price}
+          <Typography
+            component="span"
+            sx={{
+              ml: 1,
+              textDecoration: "line-through",
+              color: "text.secondary",
+            }}
+          >
+            ${p.oldPrice}
+          </Typography>
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          {p.desc}
+        </Typography>
+        <Typography sx={{ color: "gold", mt: 1 }}>
+          {"⭐".repeat(p.rating)}
+          {"☆".repeat(5 - p.rating)}
+        </Typography>
+
+        {/* Buttons */}
+        <Box sx={{ display: "flex", gap: 1, mt: 2 }}>
+          <Button
+            onClick={() => navigate("/checkout")}
+            variant="contained"
+            color="warning"
+            fullWidth
+          >
+            Add to Cart
+          </Button>
+          <Button variant="outlined" color="primary" fullWidth>
+            Buy Now
+          </Button>
+        </Box>
+      </CardContent>
+    </Card>
+  );
+};
 
 // Main Section
 export default function Trending() {
@@ -218,9 +232,7 @@ export default function Trending() {
         >
           {products.map((p, idx) => (
             <SwiperSlide key={idx}>
-              <Link href = '/productDetail' sx={{textDecoration: "none"}}>
               <TrendingCard p={p} />
-              </Link>
             </SwiperSlide>
           ))}
         </Swiper>
@@ -228,7 +240,7 @@ export default function Trending() {
         <Grid container spacing={3}>
           {products.map((p) => (
             <Grid size={{ md: 3, sm: 6, xs: 12 }} key={p.id}>
-              <Link href = '/productDetail' sx={{textDecoration: "none"}}><TrendingCard p={p} /></Link>
+              <TrendingCard p={p} />
             </Grid>
           ))}
         </Grid>
