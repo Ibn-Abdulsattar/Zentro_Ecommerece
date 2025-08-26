@@ -1,23 +1,56 @@
+// Footer.tsx
 import React from "react";
+import { Box, Typography, Link, Container } from "@mui/material";
 
+// 👉 A reusable Footer component styled with MUI
 const Footer = () => {
   return (
-    <footer className="bg-gray-100 text-gray-600 text-sm py-3 px-6 border-t flex items-center justify-between">
-      {/* Left Side */}
-      <span>
-        © {new Date().getFullYear()} Zentro Admin Panel. All rights reserved.
-      </span>
+    <Box
+      component="footer"
+      sx={{
+        bgcolor: "primary.main",
+        color: "#fff",
+        py: 2,
+        borderTop: 1,
+        borderColor: "divider",
+      }}
+    >
+      <Container
+        maxWidth="lg"
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: 2,
+        }}
+      >
+        {/* Left Side */}
+        <Typography variant="body2">
+          © {new Date().getFullYear()} Zentro Admin Panel. All rights reserved.
+        </Typography>
 
-      {/* Right Side */}
-      <div className="flex gap-4">
-        <a href="/privacy" className="hover:text-blue-500">
-          Privacy Policy
-        </a>
-        <a href="/terms" className="hover:text-blue-500">
-          Terms of Use
-        </a>
-      </div>
-    </footer>
+        {/* Right Side */}
+        <Box sx={{ display: "flex", gap: 3 }}>
+          <Link
+            href="/privacy"
+            underline="hover"
+            color="#fff"
+            sx={{ "&:hover": { color: "#fff" } }}
+          >
+            Privacy Policy
+          </Link>
+          <Link
+            href="/terms"
+            underline="hover"
+            color="#fff"
+            sx={{ "&:hover": { color: "#fff" } }}
+          >
+            Terms of Use
+          </Link>
+        </Box>
+      </Container>
+    </Box>
   );
 };
 

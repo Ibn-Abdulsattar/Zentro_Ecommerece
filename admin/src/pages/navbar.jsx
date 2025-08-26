@@ -8,6 +8,7 @@ import Typography from '@mui/material/Typography';
 import InputBase from '@mui/material/InputBase';
 import MenuIcon from '@mui/icons-material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
+import Sidebar from './sidebar';
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
@@ -52,7 +53,13 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 export default function Navbar() {
+  const [open, setOpen] = React.useState(false);
+
+    const toggleDrawer = (newOpen) => () => {
+    setOpen(newOpen);
+  };
   return (
+    <>
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="sticky">
         <Toolbar>
@@ -62,6 +69,7 @@ export default function Navbar() {
             color="inherit"
             aria-label="open drawer"
             sx={{ mr: 2 }}
+            onClick={toggleDrawer(true)} 
           >
             <MenuIcon />
           </IconButton>
@@ -85,5 +93,8 @@ export default function Navbar() {
         </Toolbar>
       </AppBar>
     </Box>
+
+    <Sidebar open={open} toggleDrawer={toggleDrawer} />
+    </>
   );
 }
