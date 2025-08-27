@@ -54,13 +54,10 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-export default function Navbar() {
-  const [open, setOpen] = React.useState(false);
+export default function Navbar({toggleDrawer}) {
+  // const [open, setOpen] = React.useState(false);
   const [anchorEl, setAnchorEl] = React.useState(null);
 
-  const toggleDrawer = (newOpen) => () => {
-    setOpen(newOpen);
-  };
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
@@ -154,7 +151,7 @@ export default function Navbar() {
         </AppBar>
       </Box>
 
-      <Sidebar open={open} toggleDrawer={toggleDrawer} />
+      {/* <Sidebar open={open} toggleDrawer={toggleDrawer} /> */}
     </>
   );
 }
