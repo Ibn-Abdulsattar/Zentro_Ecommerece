@@ -1,8 +1,7 @@
 // Footer.tsx
 import React from "react";
-import { Box, Typography, Link, Container } from "@mui/material";
+import { Box, Typography, Link, Container, Divider } from "@mui/material";
 
-// 👉 A reusable Footer component styled with MUI
 const Footer = () => {
   return (
     <Box
@@ -10,13 +9,14 @@ const Footer = () => {
       sx={{
         bgcolor: "primary.main",
         color: "#fff",
-        py: 2,
         borderTop: 1,
-        borderColor: "divider",
+        borderColor: "secondary.light",
+        mt: "auto",
+        py: 3,zIndex:2000, position: "relative"
       }}
     >
       <Container
-        maxWidth="lg"
+        maxWidth="xxl"
         sx={{
           display: "flex",
           justifyContent: "space-between",
@@ -25,18 +25,21 @@ const Footer = () => {
           gap: 2,
         }}
       >
-        {/* Left Side */}
-        <Typography variant="body2">
-          © {new Date().getFullYear()} Zentro Admin Panel. All rights reserved.
+        {/* Left Side - Branding */}
+        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+          © {new Date().getFullYear()} 🛍️ Zentro Admin Panel
         </Typography>
 
-        {/* Right Side */}
-        <Box sx={{ display: "flex", gap: 3 }}>
+        {/* Right Side - Links */}
+        <Box sx={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
           <Link
             href="/privacy"
             underline="hover"
             color="#fff"
-            sx={{ "&:hover": { color: "#fff" } }}
+            sx={{
+              fontWeight: 500,
+              "&:hover": { color: "#F97316" },
+            }}
           >
             Privacy Policy
           </Link>
@@ -44,11 +47,44 @@ const Footer = () => {
             href="/terms"
             underline="hover"
             color="#fff"
-            sx={{ "&:hover": { color: "#fff" } }}
+            sx={{
+              fontWeight: 500,
+              "&:hover": { color: "#F97316" },
+            }}
           >
             Terms of Use
           </Link>
+          <Link
+            href="/support"
+            underline="hover"
+            color="#fff"
+            sx={{
+              fontWeight: 500,
+              "&:hover": { color: "#F97316" },
+            }}
+          >
+            Support
+          </Link>
+          <Link
+            href="/docs"
+            underline="hover"
+            color="#fff"
+            sx={{
+              fontWeight: 500,
+              "&:hover": { color: "#F97316" },
+            }}
+          >
+            API Docs
+          </Link>
         </Box>
+      </Container>
+
+      {/* Divider + Note */}
+      <Divider sx={{ my: 2, borderColor: "secondary.light" }} />
+      <Container maxWidth="lg" sx={{ textAlign: "center" }}>
+        <Typography variant="caption" sx={{ color: "#fff" }}>
+          Built with ❤️ using MERN & Material-UI
+        </Typography>
       </Container>
     </Box>
   );

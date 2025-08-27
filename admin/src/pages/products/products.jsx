@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Box,
   Typography,
@@ -26,7 +26,7 @@ import {
   Select,
   MenuItem,
   Fab,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Add,
   Search,
@@ -34,40 +34,42 @@ import {
   Delete,
   Visibility,
   FilterList,
-} from '@mui/icons-material';
-import { mockProducts } from '../../data/mockData';
+} from "@mui/icons-material";
+import { mockProducts } from "../../data/mockData";
 
- const Products = () => {
+const Products = () => {
   const [products, setProducts] = useState(mockProducts);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [openDialog, setOpenDialog] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
 
-  const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.category.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = categoryFilter === 'all' || product.category === categoryFilter;
+  const filteredProducts = products.filter((product) => {
+    const matchesSearch =
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.category.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory =
+      categoryFilter === "all" || product.category === categoryFilter;
     return matchesSearch && matchesCategory;
   });
 
-  const categories = [...new Set(products.map(p => p.category))];
+  const categories = [...new Set(products.map((p) => p.category))];
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'active':
-        return 'success';
-      case 'inactive':
-        return 'default';
-      case 'out_of_stock':
-        return 'error';
+      case "active":
+        return "success";
+      case "inactive":
+        return "default";
+      case "out_of_stock":
+        return "error";
       default:
-        return 'default';
+        return "default";
     }
   };
 
   const getStatusLabel = (status) => {
-    return status.replace('_', ' ');
+    return status.replace("_", " ");
   };
 
   const handleAddProduct = () => {
@@ -86,12 +88,19 @@ import { mockProducts } from '../../data/mockData';
   };
 
   const handleDeleteProduct = (id) => {
-    setProducts(products.filter(product => product.id !== id));
+    setProducts(products.filter((product) => product.id !== id));
   };
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 4,
+        }}
+      >
         <Box>
           <Typography variant="h4" fontWeight={700} gutterBottom>
             Products Management
@@ -104,7 +113,7 @@ import { mockProducts } from '../../data/mockData';
           variant="contained"
           startIcon={<Add />}
           onClick={handleAddProduct}
-          sx={{ height: 'fit-content' }}
+          sx={{ height: "fit-content" }}
         >
           Add Product
         </Button>
@@ -113,7 +122,7 @@ import { mockProducts } from '../../data/mockData';
       <Card>
         <CardContent>
           <Grid container spacing={2} sx={{ mb: 3 }}>
-            <Grid size={{xs:12, md:6}}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 placeholder="Search products..."
                 variant="outlined"
@@ -129,7 +138,7 @@ import { mockProducts } from '../../data/mockData';
                 }}
               />
             </Grid>
-            <Grid size={{xs:12, md:3}}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <FormControl fullWidth>
                 <InputLabel>Category</InputLabel>
                 <Select
@@ -146,12 +155,12 @@ import { mockProducts } from '../../data/mockData';
                 </Select>
               </FormControl>
             </Grid>
-            <Grid size={{xs:12, md:3}}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <Button
                 variant="outlined"
                 startIcon={<FilterList />}
                 fullWidth
-                sx={{ height: '56px' }}
+                sx={{ height: "56px" }}
               >
                 More Filters
               </Button>
@@ -175,7 +184,7 @@ import { mockProducts } from '../../data/mockData';
                 {filteredProducts.map((product) => (
                   <TableRow key={product.id} hover>
                     <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
                         <Avatar
                           src={product.image}
                           sx={{ width: 48, height: 48, mr: 2 }}
@@ -191,9 +200,9 @@ import { mockProducts } from '../../data/mockData';
                       </Box>
                     </TableCell>
                     <TableCell>
-                      <Chip 
-                        label={product.category} 
-                        variant="outlined" 
+                      <Chip
+                        label={product.category}
+                        variant="outlined"
                         size="small"
                       />
                     </TableCell>
@@ -203,9 +212,11 @@ import { mockProducts } from '../../data/mockData';
                       </Typography>
                     </TableCell>
                     <TableCell>
-                      <Typography 
+                      <Typography
                         variant="body2"
-                        color={product.stock < 10 ? 'error.main' : 'text.primary'}
+                        color={
+                          product.stock < 10 ? "error.main" : "text.primary"
+                        }
                         fontWeight={product.stock < 10 ? 600 : 400}
                       >
                         {product.stock}
@@ -217,7 +228,7 @@ import { mockProducts } from '../../data/mockData';
                         label={getStatusLabel(product.status)}
                         color={getStatusColor(product.status)}
                         size="small"
-                        sx={{ textTransform: 'capitalize', fontWeight: 500 }}
+                        sx={{ textTransform: "capitalize", fontWeight: 500 }}
                       />
                     </TableCell>
                     <TableCell>
@@ -254,22 +265,22 @@ import { mockProducts } from '../../data/mockData';
         fullWidth
       >
         <DialogTitle>
-          {editingProduct ? 'Edit Product' : 'Add New Product'}
+          {editingProduct ? "Edit Product" : "Add New Product"}
         </DialogTitle>
         <DialogContent>
           <Grid container spacing={3} sx={{ mt: 1 }}>
-            <Grid size={{xs:12, md:6}}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 label="Product Name"
                 fullWidth
-                defaultValue={editingProduct?.name || ''}
+                defaultValue={editingProduct?.name || ""}
               />
             </Grid>
-            <Grid size={{xs:12, md:6}}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <FormControl fullWidth>
                 <InputLabel>Category</InputLabel>
                 <Select
-                  defaultValue={editingProduct?.category || ''}
+                  defaultValue={editingProduct?.category || ""}
                   label="Category"
                 >
                   {categories.map((category) => (
@@ -280,46 +291,48 @@ import { mockProducts } from '../../data/mockData';
                 </Select>
               </FormControl>
             </Grid>
-            <Grid size={{xs:12, md:6}}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 label="Price"
                 type="number"
                 fullWidth
-                defaultValue={editingProduct?.price || ''}
+                defaultValue={editingProduct?.price || ""}
                 InputProps={{
-                  startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                  startAdornment: (
+                    <InputAdornment position="start">$</InputAdornment>
+                  ),
                 }}
               />
             </Grid>
-            <Grid size={{xs:12, md:6}}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 label="Stock"
                 type="number"
                 fullWidth
-                defaultValue={editingProduct?.stock || ''}
+                defaultValue={editingProduct?.stock || ""}
               />
             </Grid>
-            <Grid size={{xs:12}}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 label="Description"
                 multiline
                 rows={3}
                 fullWidth
-                defaultValue={editingProduct?.description || ''}
+                defaultValue={editingProduct?.description || ""}
               />
             </Grid>
-            <Grid size={{xs:12}}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 label="Image URL"
                 fullWidth
-                defaultValue={editingProduct?.image || ''}
+                defaultValue={editingProduct?.image || ""}
               />
             </Grid>
-            <Grid size={{xs:12}}>
+            <Grid size={{ xs: 12 }}>
               <FormControl fullWidth>
                 <InputLabel>Status</InputLabel>
                 <Select
-                  defaultValue={editingProduct?.status || 'active'}
+                  defaultValue={editingProduct?.status || "active"}
                   label="Status"
                 >
                   <MenuItem value="active">Active</MenuItem>
@@ -333,7 +346,7 @@ import { mockProducts } from '../../data/mockData';
         <DialogActions>
           <Button onClick={handleCloseDialog}>Cancel</Button>
           <Button variant="contained" onClick={handleCloseDialog}>
-            {editingProduct ? 'Update' : 'Add'} Product
+            {editingProduct ? "Update" : "Add"} Product
           </Button>
         </DialogActions>
       </Dialog>
@@ -343,10 +356,10 @@ import { mockProducts } from '../../data/mockData';
         aria-label="add"
         onClick={handleAddProduct}
         sx={{
-          position: 'fixed',
+          position: "fixed",
           bottom: 16,
           right: 16,
-          display: { xs: 'flex', sm: 'none' },
+          display: { xs: "flex", sm: "none" },
         }}
       >
         <Add />
