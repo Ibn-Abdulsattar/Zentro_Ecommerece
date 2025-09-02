@@ -11,14 +11,14 @@ export const signup = wrapAsync(async (req, res) => {
     throw new ExpressError("User already exist!", 400);
   }
 
-  const newUser = User.create({ username, email, password });
+  const newUser = await User.create({ username, email, password });
 
   const token = generateToken(newUser._id);
 
   res.cookie("token", token, {
     httpOnly: true,
     secure: true,
-    samaSite: "none",
+    sameSite: "none",
     maxAge: 48 * 60 * 60 * 2000,
   });
 
@@ -33,12 +33,12 @@ export const signin = wrapAsync(async (req, res) => {
     throw new ExpressError("You are not registered!", 400);
   }
 
-  const isMatch = previousUser.comparePassword(password);
+  const isMatch = await previousUser.comparePassword(password);
   if (!isMatch) {
     throw new ExpressError("Please enter correct password!", 400);
   }
 
-  const token = generateToken(newUser._id);
+  const token = generateToken(previousUser._id);
 
   res.cookie("token", token, {
     httpOnly: true,
@@ -51,7 +51,7 @@ export const signin = wrapAsync(async (req, res) => {
 });
 
 export const logout = wrapAsync(async (req, res) => {
-  res.clearCookie("token", token, {
+  res.clearCookie("token",{
     httpOnly: true,
     secure: true,
     samaSite: "none",

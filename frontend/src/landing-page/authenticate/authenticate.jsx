@@ -3,7 +3,6 @@ import {
   Box,
   Button,
   Typography,
-  Container,
   Avatar,
   Link,
   Alert,
@@ -19,7 +18,7 @@ import Modal from "@mui/material/Modal";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
-// import axios from "axios";
+import axios from "axios";
 import Grid from "@mui/material/Grid";
 
 function Authenticate({ open, onClose }) {
@@ -60,47 +59,15 @@ function Authenticate({ open, onClose }) {
   // 🚀 form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    // setLoading(true);
-
-    // let endpoint;
-    // let payload = {};
-
-    // if (mode === "signup") {
-    //   endpoint =
-    //     "https://ofe1qf8tyd.execute-api.ap-south-1.amazonaws.com/user/signup";
-    //   payload = { ...formData };
-    // } else if (mode === "signin") {
-    //   endpoint =
-    //     "https://ofe1qf8tyd.execute-api.ap-south-1.amazonaws.com/user/signin";
-    //   payload = { email: formData.email, password: formData.password };
-    // } else if (mode === "forgot") {
-    //   endpoint =
-    //     "https://ofe1qf8tyd.execute-api.ap-south-1.amazonaws.com/user/forgot-password";
-    //   payload = { email: formData.email };
-    // }
-
-    // try {
-    //   const res = await axios.post(endpoint, payload, {
-    //     withCredentials: true,
-    //     headers: { "Content-Type": "application/json" },
-    //   });
-
-    //   if (mode === "forgot") {
-    //     alert("Password reset instructions sent to your email.");
-    //     switchMode("signin");
-    //   } else {
-    //     window.location.href = "https://main.dunuolnoll92w.amplifyapp.com/";
-    //   }
-    // } catch (err) {
-    //   const msg =
-    //     err.response?.data?.msg ||
-    //     err.response?.data?.message ||
-    //     "Request failed.";
-    //   setError(msg);
-    // } finally {
-    //   setLoading(false);
-    // }
+    axios
+      .post(`http://localhost:8080/user/${mode}`, formData, {
+        withCredentials: true,
+      })
+      .then(() => {
+        setLoading(true);
+        alert("Welcome to Zentro");
+      })
+      .catch((err) => alert(err.message));
   };
 
   return (
