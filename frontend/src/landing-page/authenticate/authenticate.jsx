@@ -1,4 +1,5 @@
 import { useState } from "react";
+import React from "react";
 import {
   Box,
   Button,
@@ -49,10 +50,12 @@ function Authenticate({ open, onClose }) {
     top: "50%",
     left: "50%",
     transform: "translate(-50%, -50%)",
-    width: 500,
     bgcolor: "background.paper",
-    // border: '2px solid #000',
     boxShadow: 24,
+    maxHeight: "90vh", // viewport height
+    overflowY: "auto",
+    borderRadius: 4,
+
     p: 4,
   };
 
@@ -78,15 +81,17 @@ function Authenticate({ open, onClose }) {
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
-        <Box style={style}>
+        <Box
+          sx={{ bgcolor: "#f7f4f4ff", width: { xs: "80%", sm: "40%" } }}
+          style={style}
+        >
           <Box
             sx={{
-              marginTop: 8,
               display: "flex",
               justifyContent: "center",
               flexDirection: "column",
               alignItems: "center",
-              height: "50vh",
+              height: "100%",
               bgcolor: "#f7f4f4ff",
               borderRadius: 2,
               p: 3,

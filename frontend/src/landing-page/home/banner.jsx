@@ -4,6 +4,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { Box, Typography, Button } from "@mui/material";
+import React from "react";
 
 export default function Banner() {
   const banners = [

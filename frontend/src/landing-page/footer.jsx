@@ -59,7 +59,7 @@ function Footer() {
             <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
               Zentro E-Commerce
             </Typography>
-            <Typography
+            {/* <Typography
               variant="body2"
               sx={{ mb: 2, lineHeight: 1.7, color: "#9CA3AF" }}
             >
@@ -67,7 +67,7 @@ function Footer() {
               <br />
               Contact: <i style={{ color: "#fff" }}>+92-3086972305</i>
               <br />
-            </Typography>
+            </Typography> */}
             <Typography variant="body2" sx={{ color: "#9CA3AF" }}>
               Your one-stop online store for everything you need. Trusted by
               thousands of happy customers worldwide.

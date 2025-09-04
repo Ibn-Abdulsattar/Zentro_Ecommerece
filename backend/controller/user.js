@@ -1,61 +1,78 @@
 import User from "../model/user.js";
 import ExpressError from "../utils/expressError.js";
 import generateToken from "../utils/generateToken.js";
-import wrapAsync from "../utils/wrapAsync.js";
 
-export const signup = wrapAsync(async (req, res) => {
+// This function registers a new user, hashes the password, sets an httpOnly cookie, and returns 201
+export const signup = async (req, res) => {
   const { username, email, password } = req.body;
-  const previousUser = await User.findOne({ email });
 
-  if (previousUser) {
-    throw new ExpressError("User already exist!", 400);
+  const existing = await User.findOne({ email: email.toLowerCase().trim() });
+  if (existing) {
+    throw new ExpressError("User already exists", 409);
   }
 
   const newUser = await User.create({ username, email, password });
-
   const token = generateToken(newUser._id);
 
+  const isProd = process.env.NODE_ENV === "production";
   res.cookie("token", token, {
     httpOnly: true,
-    secure: true,
-    sameSite: "none",
-    maxAge: 48 * 60 * 60 * 2000,
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
+    maxAge: 48 * 60 * 60 * 1000, // 48h
   });
 
-  res.status(200).send("You are registered successfuly!");
-});
+  return res.status(201).json({
+    message: "Registered successfully",
+    user: { id: newUser._id, username: newUser.username, email: newUser.email },
+  });
+};
 
-export const signin = wrapAsync(async (req, res) => {
+// This function logs a user in, sets the same cookie, and avoids user-enumeration messages
+export const signin = async (req, res) => {
   const { email, password } = req.body;
-  const previousUser = await User.findOne({ email });
 
-  if (!previousUser) {
-    throw new ExpressError("You are not registered!", 400);
+  // note: select('+password') because the schema hides it by default
+  const user = await User.findOne({ email: email.toLowerCase().trim() }).select(
+    "+password"
+  );
+  if (!user) {
+    // Generic message to avoid leaking whether an email exists
+    throw new ExpressError("Invalid email or password", 400);
   }
 
-  const isMatch = await previousUser.comparePassword(password);
+  const isMatch = await user.comparePassword(password);
   if (!isMatch) {
-    throw new ExpressError("Please enter correct password!", 400);
+    throw new ExpressError("Invalid email or password", 400);
   }
 
-  const token = generateToken(previousUser._id);
+  const token = generateToken(user._id);
 
+  const isProd = process.env.NODE_ENV === "production";
   res.cookie("token", token, {
     httpOnly: true,
-    secure: true,
-    samaSite: "none",
-    maxAge: 48 * 60 * 60 * 2000,
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
+    maxAge: 48 * 60 * 60 * 1000,
   });
 
-  res.status(200).send("Welcome back to my Zentro");
-});
+  return res.status(200).json({
+    message: "Welcome back!",
+    user: { id: user._id, username: user.username, email: user.email },
+  });
+};
 
-export const logout = wrapAsync(async (req, res) => {
-  res.clearCookie("token",{
+// This function clears the auth cookie using the same attributes used when setting it
+export const logout = async (req, res) => {
+  const isProd = process.env.NODE_ENV === "production";
+  res.clearCookie("token", {
     httpOnly: true,
-    secure: true,
-    samaSite: "none",
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
   });
+  return res.status(200).json({ message: "You are logged out" });
+};
 
-  res.status(200).send("You are logged out");
-});
+export const author = async (req, res) => {
+  res.status(200).json({});
+};

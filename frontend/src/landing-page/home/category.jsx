@@ -8,6 +8,7 @@ import {
   Container,
   Link,
 } from "@mui/material";
+import React from "react";
 
 const categories = [
   { image: "/fashion.jpg", title: "Fashion" },
