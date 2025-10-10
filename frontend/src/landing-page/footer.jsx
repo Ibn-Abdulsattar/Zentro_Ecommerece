@@ -7,6 +7,7 @@ import {
   Link,
   IconButton,
   Divider,
+  Avatar
 } from "@mui/material";
 import {
   Facebook,
@@ -56,18 +57,16 @@ function Footer() {
         <Grid container spacing={4} columns={16}>
           {/* Logo + Description */}
           <Grid size={{ md: 4, sm: 6, xs: 6 }}>
-            <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-              Zentro E-Commerce
-            </Typography>
-            {/* <Typography
-              variant="body2"
-              sx={{ mb: 2, lineHeight: 1.7, color: "#9CA3AF" }}
-            >
-              Created by <i style={{ color: "#fff" }}>Ibn-Abdulsattar</i>
-              <br />
-              Contact: <i style={{ color: "#fff" }}>+92-3086972305</i>
-              <br />
-            </Typography> */}
+            <Avatar
+                src="/Zentro-logo-transparent.png"
+                alt="Zentro Logo"
+                sx={{
+                  width: 200,
+                  display: { md: "inline-flex", xs: "none" },
+                  cursor: "pointer",
+                }}
+              />
+
             <Typography variant="body2" sx={{ color: "#9CA3AF" }}>
               Your one-stop online store for everything you need. Trusted by
               thousands of happy customers worldwide.

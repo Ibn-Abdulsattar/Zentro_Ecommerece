@@ -1,13 +1,22 @@
 import express from "express";
 import wrapAsync from "../utils/wrapAsync.js";
-import { logout, signin, signup, author } from "../controller/user.js";
-import auth from "../middleware/auth.js"; // <-- import middleware
+import {
+  logout,
+  signin,
+  signup,
+  googleCallback,
+  resetPassword,
+  forgot,
+} from "../controller/user.js";
 const router = express.Router();
 
 // These routes wrap plain async controllers exactly once
 router.post("/signup", wrapAsync(signup));
 router.post("/signin", wrapAsync(signin));
-router.post("/logout", auth, wrapAsync(logout));
-router.get("/me", auth, wrapAsync(author));
+router.post("/forgot", wrapAsync(forgot));
+router.post("/logout", wrapAsync(logout));
+router.put("/reset-password/:resetToken", wrapAsync(resetPassword));
+router.post("/google/callback", wrapAsync(googleCallback));
+
 
 export default router;

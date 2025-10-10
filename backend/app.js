@@ -6,20 +6,30 @@ const port = process.env.PORT || 8080;
 import mongoose from "mongoose";
 import user from "./routes/user.js";
 import cors from "cors";
-import helmet from "helmet";
 import cookieParser from "cookie-parser";
+import User from "./model/user.js";
+import auth from "./middleware/auth.js";
 
-// This enables correct behavior for 'secure' cookies behind proxies like Render/Heroku/Nginx
-// This function configures Express to trust proxy headers like X-Forwarded-Proto.
 app.set("trust proxy", 1); // <-- important in production when using sameSite:'none' + secure cookies
 app.use(cookieParser());
-app.use(helmet());
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", "http://localhost:5174"],
     credentials: true,
   })
 );
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Credentials", "true");
+  next();
+});
+
+app.use((req, res, next) => {
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+  res.setHeader('Cross-Origin-Embedder-Policy', 'unsafe-none');
+  next();
+});
+
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -37,7 +47,28 @@ app.get("/", (req, res) => {
   res.send("Backend is running!");
 });
 
-// This must be after routes, before listen (order matters relative to routes)
+app.get("/me", auth("user"), async (req, res) => {
+  const user = await User.findById(req.user._id).select(
+    "username email role status createdAt updatedAt"
+  );
+  if (!user) return res.status(404).json({ message: "User not found" });
+  return res.status(200).json({
+    message: "Welcome back!",
+    user: {
+      id: user._id,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+    },
+  });
+});
+
+app.get("/admin", auth("admin"), async (req, res) => {
+  const admin = await User.findById(req.user._id);
+  console.log(admin);
+  res.send(admin);
+});
+
 app.use((err, req, res, next) => {
   console.error("🔥 Error:", err);
   const statusCode = err.statusCode || err.status || 500; // support both

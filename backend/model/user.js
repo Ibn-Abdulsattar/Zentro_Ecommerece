@@ -10,6 +10,8 @@ const userSchema = new Schema(
       trim: true,
       unique: true,
       index: true,
+      minlength: [3, "Username must be at least 3 characters"],
+      maxlength: [20, "Username cannot exceed 20 characters"],
     },
     email: {
       type: String,
@@ -18,9 +20,22 @@ const userSchema = new Schema(
       lowercase: true,
       unique: true,
       index: true,
+      match: [/^\S+@\S+\.\S+$/, "Please enter a valid email address"],
     },
-    // Keep password out of queries by default to prevent accidental leaks
-    password: { type: String, required: true, select: false },
+    password: {
+      type: String,
+      select: false,
+      minlength: [8, "Password must be at least 8 characters long"],
+      maxlength: [20, "Password cannot exceed 20 characters"],
+      match: [
+        /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$/,
+        "Password must contain at least 1 uppercase, 1 lowercase, 1 number and 1 special character",
+      ],
+    },
+     googleId: { type: String }, // google users
+    role: { type: String, enum: ["user", "admin"], default: "user" },
+    resetPasswordToken: { type: String },
+    resetPasswordExpire: { type: Date },
   },
   { timestamps: true }
 );
@@ -28,13 +43,13 @@ const userSchema = new Schema(
 userSchema.index({ createdAt: -1 });
 userSchema.index({ updatedAt: -1 });
 
-// This hook hashes the password when it's created or changed
+// Hash password before saving
 userSchema.pre("save", async function () {
-  if (!this.isModified("password")) return;
+  if (!this.isModified("password") || !this.password) return;
   this.password = await bcrypt.hash(this.password, 10);
 });
 
-// This method safely compares a plain password with the hashed one
+// Compare password method
 userSchema.methods.comparePassword = function (enteredPassword) {
   return bcrypt.compare(enteredPassword, this.password);
 };

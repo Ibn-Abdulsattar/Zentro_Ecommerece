@@ -5,4 +5,4 @@ export default class ExpressError extends Error {
     this.statusCode = statusCode; // <-- align with error middleware
     Error.captureStackTrace?.(this, this.constructor);
   }
-}
+};

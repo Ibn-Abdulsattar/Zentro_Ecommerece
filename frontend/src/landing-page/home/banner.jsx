@@ -64,7 +64,7 @@ export default function Banner() {
         loop
         pagination={{ clickable: true, dynamicBullets: true }} // dots
         modules={[Navigation, Autoplay, Pagination]}
-        style={{ height: "60vh", width: "100%" }}
+        style={{ height: "90vh", width: "100%" }}
       >
         {banners.map((banner, index) => (
           <SwiperSlide key={index}>

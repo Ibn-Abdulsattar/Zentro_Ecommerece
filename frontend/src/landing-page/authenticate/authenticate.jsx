@@ -1,5 +1,6 @@
 import { useState } from "react";
-import React from "react";
+import { useNavigate } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
 import {
   Box,
   Button,
@@ -14,16 +15,36 @@ import {
   IconButton,
   TextField,
   CircularProgress,
+  Divider,
+  Fade,
 } from "@mui/material";
 import Modal from "@mui/material/Modal";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import CloseIcon from "@mui/icons-material/Close";
 import axios from "axios";
 import Grid from "@mui/material/Grid";
+import GoogleIcon from "@mui/icons-material/Google";
+import FacebookIcon from "@mui/icons-material/Facebook";
+import { useAuth } from "../AuthContext";
+
+function CustomGoogleButton({ onSuccess, onError, }) {
+  return (
+    <GoogleLogin
+      onSuccess={onSuccess}
+      onError={onError}
+      useOneTap
+      text="continue_with" // "signin_with", "signup_with", "continue_with", "signin"
+    />
+  );
+}
 
 function Authenticate({ open, onClose }) {
-  const [mode, setMode] = useState("signin"); // signin | signup | forgot
+  const { setAlert, setUser } = useAuth();
+  const navigate = useNavigate();
+
+  const [mode, setMode] = useState("signin");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -32,219 +53,502 @@ function Authenticate({ open, onClose }) {
     password: "",
   });
   const [error, setError] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({});
 
-  // 🔄 toggle modes
+  // Switch authentication modes
   const switchMode = (newMode) => {
     setMode(newMode);
     setFormData({ username: "", email: "", password: "" });
     setError(null);
+    setFieldErrors({});
   };
 
-  const handleChange = (e) =>
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  // Handle input changes with validation
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // Clear field-specific error when user starts typing
+    if (fieldErrors[name]) {
+      setFieldErrors((prev) => ({ ...prev, [name]: null }));
+    }
+    if (error) setError(null);
+  };
+
+  // Validate form before submission
+  const validateForm = () => {
+    const errors = {};
+
+    if (mode === "signup" && !formData.username.trim()) {
+      errors.username = "Full name is required";
+    }
+
+    if (!formData.email.trim()) {
+      errors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      errors.email = "Please enter a valid email address";
+    }
+
+    if (mode !== "forgot") {
+      if (!formData.password) {
+        errors.password = "Password is required";
+      } else if (mode === "signup" && formData.password.length < 8) {
+        errors.password = "Password must be at least 8 characters";
+      }
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleClickShowPassword = () => setShowPassword((prev) => !prev);
   const handleMouseDownPassword = (e) => e.preventDefault();
 
-  const style = {
+  const handleClose = () => {
+    if (!loading) {
+      onClose();
+      // Reset form after modal closes
+      setTimeout(() => {
+        setMode("signin");
+        setFormData({ username: "", email: "", password: "" });
+        setError(null);
+        setFieldErrors({});
+      }, 200);
+    }
+  };
+
+  // Form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await axios.post(
+        `${import.meta.env.VITE_Backend_Url}/user/${mode}`,
+        formData,
+        { withCredentials: true }
+      );
+
+      // Success handling
+      setUser(res.data.user);
+      setAlert({ type: "success", message: res.data.message });
+      handleClose();
+
+      if (mode === "signin" || mode === "signup") {
+        navigate("/");
+      }
+    } catch (err) {
+      // Error handling
+      const errorMessage =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        "An error occurred. Please try again.";
+
+      setError(errorMessage);
+
+      // Handle specific field errors from backend
+      if (err.response?.data?.errors) {
+        setFieldErrors(err.response.data.errors);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // OAuth handler
+  const handleOAuthLogin = (provider) => {
+    window.location.href = `${
+      import.meta.env.VITE_Backend_Url
+    }/user/${provider}`;
+  };
+
+  const modalStyle = {
     position: "absolute",
     top: "50%",
     left: "50%",
     transform: "translate(-50%, -50%)",
     bgcolor: "background.paper",
     boxShadow: 24,
-    maxHeight: "90vh", // viewport height
+    maxHeight: "80vh",
     overflowY: "auto",
-    borderRadius: 4,
-
+    borderRadius: 8,
     p: 4,
+    outline: "none",
   };
 
-  // 🚀 form submit
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    axios
-      .post(`http://localhost:8080/user/${mode}`, formData, {
-        withCredentials: true,
-      })
-      .then(() => {
-        setLoading(true);
-        alert("Welcome to Zentro");
-      })
-      .catch((err) => alert(err.message));
+  const authButtonStyle = {
+    borderColor: "#e0e0e0",
+    color: "#333",
+    textTransform: "none",
+    fontWeight: 500,
+    borderRadius: 2,
+    px: 2,
+    py: 1.25,
+    "&:hover": {
+      backgroundColor: "#f5f5f5",
+      borderColor: "#F97316",
+    },
   };
 
+  const getModeTitle = () => {
+    switch (mode) {
+      case "signup":
+        return "Create your account";
+      case "signin":
+        return "Welcome back";
+      case "forgot":
+        return "Reset your password";
+      default:
+        return "Sign In";
+    }
+  };
+
+  const getModeSubtitle = () => {
+    switch (mode) {
+      case "signup":
+        return "Sign up to get started";
+      case "signin":
+        return "Sign in to continue";
+      case "forgot":
+        return "Enter your email to receive a reset link";
+      default:
+        return "";
+    }
+  };
+
+
+  // Google Login Success Handler
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      const res = await axios.post(
+        `${import.meta.env.VITE_Backend_Url}/user/google/callback`,
+        { credential: credentialResponse.credential },
+        { withCredentials: true }
+      );
+
+      handleClose();
+      setUser(res.data.user);
+      setAlert({ type: "success", message: res.data.message });
+      navigate("/");
+    } catch (err) {
+      console.error("Google login error:", err);
+      setAlert({
+        type: "error",
+        message: err.response?.data?.message || "Google Sign-In failed.",
+      });
+    }
+  };
+
+  // Google Login Error Handler
+  const handleGoogleError = () => {
+    setAlert({
+      type: "error",
+      message: "Google Sign-In failed. Try again.",
+    });
+  };
   return (
-    <div>
-      <Modal
-        open={open}
-        onClose={onClose}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
-      >
+    <Modal
+      open={open}
+      onClose={handleClose}
+      aria-labelledby="auth-modal-title"
+      aria-describedby="auth-modal-description"
+      closeAfterTransition
+    >
+      <Fade in={open}>
         <Box
-          sx={{ bgcolor: "#f7f4f4ff", width: { xs: "80%", sm: "40%" } }}
-          style={style}
+          sx={{
+            bgcolor: "#ffffff",
+            width: { xs: "90%", sm: "450px" },
+            maxWidth: "100%",
+            p: "1.5rem",
+          }}
+          style={modalStyle}
         >
+          {/* Close Button */}
+          <IconButton
+            onClick={handleClose}
+            disabled={loading}
+            sx={{
+              position: "absolute",
+              right: 8,
+              top: 8,
+              color: "grey.500",
+            }}
+            aria-label="close"
+          >
+            <CloseIcon />
+          </IconButton>
+
+          {/* Header */}
           <Box
             sx={{
               display: "flex",
-              justifyContent: "center",
               flexDirection: "column",
               alignItems: "center",
-              height: "100%",
-              bgcolor: "#f7f4f4ff",
-              borderRadius: 2,
-              p: 3,
+              mb: 3,
             }}
           >
-            <Avatar sx={{ m: 1, bgcolor: "#F97316" }}>
+            <Avatar sx={{ m: 1, bgcolor: "#F97316", width: 56, height: 56 }}>
               <LockOutlinedIcon />
             </Avatar>
 
-            <Typography component="h1" variant="h5">
-              {mode === "signup"
-                ? "Sign Up"
-                : mode === "signin"
-                ? "Sign In"
-                : "Forgot Password"}
+            <Typography
+              component="h1"
+              variant="h5"
+              fontWeight={600}
+              id="auth-modal-title"
+            >
+              {getModeTitle()}
             </Typography>
 
-            <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
-              <Grid container spacing={2}>
-                {mode === "signup" && (
-                  <Grid size={{ xs: 12 }}>
-                    <TextField
-                      fullWidth
-                      label="Full Name"
-                      name="username"
-                      value={formData.username}
-                      onChange={handleChange}
-                      required
-                    />
-                  </Grid>
-                )}
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ mt: 0.5 }}
+              id="auth-modal-description"
+            >
+              {getModeSubtitle()}
+            </Typography>
+          </Box>
 
+          {/* OAuth Buttons */}
+          {(mode === "signup" || mode === "signin") && (
+            <>
+              <Box sx={{ mb: 3 }}>
+                <CustomGoogleButton
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleError}
+                />
+
+                <Button
+                  onClick={() => handleOAuthLogin("facebook")}
+                  variant="outlined"
+                  startIcon={<FacebookIcon sx={{ color: "#1877F2" }} />}
+                  sx={{ ...authButtonStyle, mt: 1.5 }}
+                  fullWidth
+                  disabled={loading}
+                >
+                  Continue with Facebook
+                </Button>
+              </Box>
+
+              <Divider sx={{ my: 3 }}>
+                <Typography variant="body2" color="text.secondary">
+                  or
+                </Typography>
+              </Divider>
+            </>
+          )}
+
+          {/* Form */}
+          <Box component="form" onSubmit={handleSubmit} noValidate>
+            <Grid container spacing={2}>
+              {mode === "signup" && (
                 <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
-                    label="Email Address"
-                    name="email"
-                    type="email"
-                    value={formData.email}
+                    label="Full Name"
+                    name="username"
+                    value={formData.username}
                     onChange={handleChange}
+                    error={!!fieldErrors.username}
+                    helperText={fieldErrors.username}
+                    disabled={loading}
+                    autoComplete="name"
                     required
                   />
                 </Grid>
-
-                {mode !== "forgot" && (
-                  <Grid size={{ xs: 12 }}>
-                    <FormControl variant="outlined" fullWidth>
-                      <InputLabel>Password</InputLabel>
-                      <OutlinedInput
-                        type={showPassword ? "text" : "password"}
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        required
-                        endAdornment={
-                          <InputAdornment position="end">
-                            <IconButton
-                              onClick={handleClickShowPassword}
-                              onMouseDown={handleMouseDownPassword}
-                              edge="end"
-                            >
-                              {showPassword ? (
-                                <VisibilityOff />
-                              ) : (
-                                <Visibility />
-                              )}
-                            </IconButton>
-                          </InputAdornment>
-                        }
-                      />
-                    </FormControl>
-                  </Grid>
-                )}
-              </Grid>
-
-              {error && (
-                <Alert severity="error" sx={{ mt: 2 }}>
-                  {error}
-                </Alert>
               )}
 
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                sx={{ mt: 3, mb: 2, height: 40, bgcolor: "#F97316" }}
-                disabled={loading}
-              >
-                {loading ? (
-                  <CircularProgress size={24} sx={{ color: "white" }} />
-                ) : mode === "signup" ? (
-                  "Sign Up"
-                ) : mode === "signin" ? (
-                  "Sign In"
-                ) : (
-                  "Send Reset Link"
-                )}
-              </Button>
-
-              {/* Switch Links */}
-              <Grid container justifyContent="center">
-                {mode === "signin" && (
-                  <>
-                    <Grid size={{ xs: 12 }} textAlign="center">
-                      <Link
-                        href="#"
-                        variant="body2"
-                        onClick={() => switchMode("forgot")}
-                      >
-                        Forgot Password?
-                      </Link>
-                    </Grid>
-                    <Grid size={{ xs: 12 }} textAlign="center">
-                      <Link
-                        href="#"
-                        variant="body2"
-                        onClick={() => switchMode("signup")}
-                      >
-                        Don't have an account? Sign up
-                      </Link>
-                    </Grid>
-                  </>
-                )}
-
-                {mode === "signup" && (
-                  <Grid size={{ xs: 12 }} textAlign="center">
-                    <Link
-                      href="#"
-                      variant="body2"
-                      onClick={() => switchMode("signin")}
-                    >
-                      Already have an account? Sign in
-                    </Link>
-                  </Grid>
-                )}
-
-                {mode === "forgot" && (
-                  <Grid size={{ xs: 12 }} textAlign="center">
-                    <Link
-                      href="#"
-                      variant="body2"
-                      onClick={() => switchMode("signin")}
-                    >
-                      Back to Sign In
-                    </Link>
-                  </Grid>
-                )}
+              <Grid size={{ xs: 12 }}>
+                <TextField
+                  fullWidth
+                  label="Email Address"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  error={!!fieldErrors.email}
+                  helperText={fieldErrors.email}
+                  disabled={loading}
+                  autoComplete="email"
+                  required
+                />
               </Grid>
+
+              {mode !== "forgot" && (
+                <Grid size={{ xs: 12 }}>
+                  <FormControl
+                    variant="outlined"
+                    fullWidth
+                    error={!!fieldErrors.password}
+                  >
+                    <InputLabel required>Password</InputLabel>
+                    <OutlinedInput
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      disabled={loading}
+                      autoComplete={
+                        mode === "signup" ? "new-password" : "current-password"
+                      }
+                      label="Password"
+                      endAdornment={
+                        <InputAdornment position="end">
+                          <IconButton
+                            onClick={handleClickShowPassword}
+                            onMouseDown={handleMouseDownPassword}
+                            edge="end"
+                            disabled={loading}
+                            aria-label="toggle password visibility"
+                          >
+                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      }
+                    />
+                    {fieldErrors.password && (
+                      <Typography
+                        variant="caption"
+                        color="error"
+                        sx={{ mt: 0.5, ml: 1.75 }}
+                      >
+                        {fieldErrors.password}
+                      </Typography>
+                    )}
+                  </FormControl>
+                </Grid>
+              )}
+            </Grid>
+
+            {/* Error Alert */}
+            {error && (
+              <Alert severity="error" sx={{ mt: 2 }}>
+                {error}
+              </Alert>
+            )}
+
+            {/* Submit Button */}
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{
+                mt: 3,
+                mb: 2,
+                height: 44,
+                bgcolor: "#F97316",
+                textTransform: "none",
+                fontSize: "1rem",
+                fontWeight: 600,
+                "&:hover": {
+                  bgcolor: "#ea580c",
+                },
+              }}
+              disabled={loading}
+            >
+              {loading ? (
+                <CircularProgress size={24} sx={{ color: "white" }} />
+              ) : mode === "signup" ? (
+                "Create Account"
+              ) : mode === "signin" ? (
+                "Sign In"
+              ) : (
+                "Send Reset Link"
+              )}
+            </Button>
+
+            {/* Switch Mode Links */}
+            <Box sx={{ textAlign: "center", mt: 2 }}>
+              {mode === "signin" && (
+                <>
+                  <Box sx={{ display: "flex", justifyContent: "center" }}>
+                    <Link
+                      component="button"
+                      type="button"
+                      variant="body2"
+                      onClick={() => switchMode("forgot")}
+                      disabled={loading}
+                      sx={{
+                        display: "block",
+                        mb: 1,
+                        color: "#F97316",
+                        textDecoration: "none",
+                        "&:hover": { textDecoration: "underline" },
+                      }}
+                    >
+                      Forgot your password?
+                    </Link>
+                  </Box>
+                  <Typography variant="body2" color="text.secondary">
+                    Don't have an account?{" "}
+                    <Link
+                      component="button"
+                      type="button"
+                      onClick={() => switchMode("signup")}
+                      disabled={loading}
+                      sx={{
+                        color: "#F97316",
+                        fontWeight: 600,
+                        textDecoration: "none",
+                        "&:hover": { textDecoration: "underline" },
+                      }}
+                    >
+                      Sign up
+                    </Link>
+                  </Typography>
+                </>
+              )}
+
+              {mode === "signup" && (
+                <Typography variant="body2" color="text.secondary">
+                  Already have an account?{" "}
+                  <Link
+                    component="button"
+                    type="button"
+                    onClick={() => switchMode("signin")}
+                    disabled={loading}
+                    sx={{
+                      color: "#F97316",
+                      fontWeight: 600,
+                      textDecoration: "none",
+                      "&:hover": { textDecoration: "underline" },
+                    }}
+                  >
+                    Sign in
+                  </Link>
+                </Typography>
+              )}
+
+              {mode === "forgot" && (
+                <Link
+                  component="button"
+                  type="button"
+                  variant="body2"
+                  onClick={() => switchMode("signin")}
+                  disabled={loading}
+                  sx={{
+                    color: "#F97316",
+                    fontWeight: 600,
+                    textDecoration: "none",
+                    "&:hover": { textDecoration: "underline" },
+                  }}
+                >
+                  ← Back to Sign In
+                </Link>
+              )}
             </Box>
           </Box>
         </Box>
-      </Modal>
-    </div>
+      </Fade>
+    </Modal>
   );
 }
 
