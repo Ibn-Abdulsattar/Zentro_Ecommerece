@@ -270,3 +270,78 @@ Welcome aboard, and happy shopping!
     return res.status(500).json({ message: "Google login failed" });
   }
 };
+
+
+export const facebookCallback = async (req, res) => {
+  const { access_token } = req.body;
+
+  if (!access_token) {
+    return res.status(400).json({ message: "Missing Facebook access token" });
+  }
+
+  try {
+    // Get user info from Facebook
+    const { data } = await axios.get(
+      `https://graph.facebook.com/me?fields=id,name,email&access_token=${access_token}`
+    );
+
+    const { id: facebookId, email, name } = data;
+
+    if (!email) {
+      return res.status(400).json({
+        message: "Email permission is required. Please allow email access.",
+      });
+    }
+
+    let user = await User.findOne({ email });
+    let message = "";
+
+    if (!user) {
+      // 🆕 New user (Signup)
+      user = await User.create({
+        username: name,
+        email,
+        facebookId,
+        password: null,
+        role: "user",
+      });
+
+      message =
+        "Welcome to Zentro! Your account has been created via Facebook 🎉";
+
+      const welcomeMessage = `Welcome to Zentro, ${name}! 🎉
+
+We’re thrilled to have you here.
+
+Start exploring amazing deals and track your favorites anytime! 🛍️`;
+
+      await sendEmail(email, "Welcome to Zentro! 🎉", welcomeMessage);
+    } else {
+      // 🔐 Existing user (Signin)
+      message = "Welcome back! Logged in with Facebook successfully.";
+    }
+
+    const token = generateToken(user);
+    const isProd = process.env.NODE_ENV === "production";
+
+    res.cookie("userToken", token, {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
+      maxAge: 48 * 60 * 60 * 1000,
+    });
+
+    return res.status(200).json({
+      message,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (err) {
+    console.error("Facebook login error:", err);
+    return res.status(500).json({ message: "Facebook login failed" });
+  }
+};

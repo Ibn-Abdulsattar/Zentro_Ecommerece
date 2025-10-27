@@ -4,7 +4,6 @@ import express from "express";
 const app = express();
 const port = process.env.PORT || 8080;
 import mongoose from "mongoose";
-import user from "./routes/user.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import User from "./model/user.js";
@@ -41,7 +40,21 @@ async function main() {
 }
 main();
 
+import user from "./routes/user.js";
+import product from "./routes/productRoute.js";
+import category from "./routes/categoryRoute.js";
+import order from "./routes/orderRoute.js";
+import variant from "./routes/variantRoute.js";
+import media from "./routes/mediaRoute.js";
+
+
 app.use("/user", user);
+app.use('/api', product);
+app.use('/api', category);
+app.use('/api', variant);
+app.use('/api', order);
+app.use('/api', media);
+
 
 app.get("/", (req, res) => {
   res.send("Backend is running!");

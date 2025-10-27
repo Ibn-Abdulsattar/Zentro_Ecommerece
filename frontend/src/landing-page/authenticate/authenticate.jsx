@@ -25,9 +25,9 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import CloseIcon from "@mui/icons-material/Close";
 import axios from "axios";
 import Grid from "@mui/material/Grid";
-import GoogleIcon from "@mui/icons-material/Google";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import { useAuth } from "../AuthContext";
+import FacebookLogin from "@greatsumini/react-facebook-login";
 
 function CustomGoogleButton({ onSuccess, onError, }) {
   return (
@@ -39,6 +39,62 @@ function CustomGoogleButton({ onSuccess, onError, }) {
     />
   );
 }
+
+function FacebookAuthButton({ loading, handleClose, setUser, setAlert, navigate }) {
+  return (
+    <FacebookLogin
+      appId={import.meta.env.VITE_FACEBOOK_APP_ID}
+      onSuccess={async (response) => {
+        try {
+          const res = await axios.post(
+            `${import.meta.env.VITE_Backend_Url}/user/facebook/callback`,
+            { access_token: response.accessToken },
+            { withCredentials: true }
+          );
+
+          handleClose();
+          setUser(res.data.user);
+          setAlert({ type: "success", message: res.data.message });
+          navigate("/");
+        } catch (err) {
+          console.error("Facebook login error:", err);
+          setAlert({
+            type: "error",
+            message:
+              err.response?.data?.message ||
+              "Facebook Sign-In failed. Try again.",
+          });
+        }
+      }}
+      onFail={(err) => {
+        console.error("Facebook login failed:", err);
+        setAlert({ type: "error", message: "Facebook Sign-In failed." });
+      }}
+      render={({ onClick }) => (
+        <Button
+          onClick={onClick}
+          variant="outlined"
+          startIcon={<FacebookIcon sx={{ color: "#1877F2" }} />}
+          sx={{
+            borderColor: "#e0e0e0",
+            color: "#333",
+            textTransform: "none",
+            fontWeight: 500,
+            borderRadius: 1,
+            px: 2,
+            py: .8,
+            width: "100%",
+            mt: 1.5,
+          }}
+          disabled={loading}
+        >
+          <Box component="span"  sx={{ ml: { xs: "auto" }, mr: {xs:"auto"} }}>Continue with Facebook</Box>
+        </Button>
+      )}
+    />
+  );
+}
+
 
 function Authenticate({ open, onClose }) {
   const { setAlert, setUser } = useAuth();
@@ -161,13 +217,6 @@ function Authenticate({ open, onClose }) {
     }
   };
 
-  // OAuth handler
-  const handleOAuthLogin = (provider) => {
-    window.location.href = `${
-      import.meta.env.VITE_Backend_Url
-    }/user/${provider}`;
-  };
-
   const modalStyle = {
     position: "absolute",
     top: "50%",
@@ -180,20 +229,6 @@ function Authenticate({ open, onClose }) {
     borderRadius: 8,
     p: 4,
     outline: "none",
-  };
-
-  const authButtonStyle = {
-    borderColor: "#e0e0e0",
-    color: "#333",
-    textTransform: "none",
-    fontWeight: 500,
-    borderRadius: 2,
-    px: 2,
-    py: 1.25,
-    "&:hover": {
-      backgroundColor: "#f5f5f5",
-      borderColor: "#F97316",
-    },
   };
 
   const getModeTitle = () => {
@@ -264,7 +299,7 @@ function Authenticate({ open, onClose }) {
         <Box
           sx={{
             bgcolor: "#ffffff",
-            width: { xs: "90%", sm: "450px" },
+            width: { xs: "85%", sm: "450px" },
             maxWidth: "100%",
             p: "1.5rem",
           }}
@@ -326,16 +361,13 @@ function Authenticate({ open, onClose }) {
                   onError={handleGoogleError}
                 />
 
-                <Button
-                  onClick={() => handleOAuthLogin("facebook")}
-                  variant="outlined"
-                  startIcon={<FacebookIcon sx={{ color: "#1877F2" }} />}
-                  sx={{ ...authButtonStyle, mt: 1.5 }}
-                  fullWidth
-                  disabled={loading}
-                >
-                  Continue with Facebook
-                </Button>
+                <FacebookAuthButton
+    loading={loading}
+    handleClose={handleClose}
+    setUser={setUser}
+    setAlert={setAlert}
+    navigate={navigate}
+  />
               </Box>
 
               <Divider sx={{ my: 3 }}>
