@@ -18,9 +18,9 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Register from "./register/Register";
 import { useState } from "react";
-import { useEffect } from "react";
 import {Menu, Link} from "@mui/material";
 import MenuItem from "@mui/material/MenuItem";
+import { useAuth } from "./AuthContext";
 
 // Gradient animation
 const gradientAnimation = keyframes`
@@ -191,24 +191,23 @@ const StatusChip = styled(Chip)(({ theme }) => ({
   },
 }));
 
-export default function Navbar({onMenuClick, onSidebarCollapse, isSidebarCollapsed, elevation}) {
+export default function Navbar({onMenuClick, elevation}) {
   const [searchValue, setSearchValue] = React.useState("");
   const [authOpen, setAuthOpen] = React.useState(false); // ✅ modal state
-  const [user, setUser] = React.useState(null); // optional if you want user data
-  const [admin, setAdmin] = useState();
+  const {user, setUser, alert, setAlert} = useAuth(); // optional if you want user data
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
 
   const handleMenuOpen = (event) => {
-    if (admin) setAnchorEl(event.currentTarget);
+    if (user) setAnchorEl(event.currentTarget);
   };
 
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
 
-  const goToAdminPanel = () => {
-    window.open("http://localhost:5173", "_blank", "noopener,noreferrer"); // 🔹 apni admin site ka link lagao
+  const goToUserSite = () => {
+    window.open(`${import.meta.env.VITE_Frontend_Url}`, "_blank", "noopener,noreferrer"); // 🔹 apni admin site ka link lagao
     handleMenuClose();
   };
 
@@ -239,24 +238,11 @@ export default function Navbar({onMenuClick, onSidebarCollapse, isSidebarCollaps
     }
   };
 
-  const fetchAdmin = async () => {
-    await axios
-      .get("http://localhost:8080/admin", { withCredentials: true })
-      .then((res) => {
-        setAdmin(res.data);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  };
-
-  useEffect(() => {
-    fetchAdmin();
-  }, []);
 
   const handleLogout = async() => {
-    axios.post('http://localhost:8080/user/logout', {type: "admin"}, {withCredentials: true}).then(res=>{
-      window.location.href = 'http://localhost:5174';
+    axios.post(`${import.meta.env.VITE_Backend_Url}/user/logout`, {type: "admin"}, {withCredentials: true}).then(()=>{
+      setUser(null)
+      setAlert({type: "success", message: "You Logged out successfuly!"})
     })
   };
 
@@ -325,25 +311,25 @@ export default function Navbar({onMenuClick, onSidebarCollapse, isSidebarCollaps
                 edge="end"
                 aria-label="account"
                 onClick={(e) => {
-                  if (admin) handleMenuOpen(e);
+                  if (user) handleMenuOpen(e);
                   else setAuthOpen(true); // login modal
                 }}
               >
                 <Avatar>
-                  {admin ? (
-                    admin.username.charAt(0).toUpperCase()
+                  {user ? (
+                    user.username.charAt(0).toUpperCase()
                   ) : (
                     <AccountCircleIcon />
                   )}
                 </Avatar>
               </StyledIconButton>
-              {admin && (
+              {user && (
                 <Menu
                   anchorEl={anchorEl}
                   open={Boolean(anchorEl)}
                   onClose={handleMenuClose}
                 >
-                  <MenuItem onClick={goToAdminPanel}>Go to User site</MenuItem>
+                  <MenuItem onClick={goToUserSite}>Go to User site</MenuItem>
                   <MenuItem
                     onClick={() => {
                       handleLogout();

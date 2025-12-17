@@ -123,8 +123,6 @@ export default function AdminLayout({
       >
         <Navbar
           onMenuClick={handleDrawerToggle}
-          onSidebarCollapse={handleSidebarCollapse}
-          isSidebarCollapsed={sidebarCollapsed}
           elevation={2}
         />
       </Box>

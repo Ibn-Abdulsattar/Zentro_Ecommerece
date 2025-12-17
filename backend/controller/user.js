@@ -249,12 +249,21 @@ Welcome aboard, and happy shopping!
     const token = generateToken(user);
     const isProd = process.env.NODE_ENV === "production";
 
+  if (user.role === "admin") {
+    res.cookie("adminToken", token, {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
+      maxAge: 48 * 60 * 60 * 1000,
+    });
+  } else {
     res.cookie("userToken", token, {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? "none" : "lax",
       maxAge: 48 * 60 * 60 * 1000,
     });
+  }
 
     return res.status(200).json({
       message,
