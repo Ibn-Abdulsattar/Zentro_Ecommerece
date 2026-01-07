@@ -1,98 +1,47 @@
-import dotenv from "dotenv";
-dotenv.config();
 import express from "express";
-const app = express();
-const port = process.env.PORT || 8080;
-import mongoose from "mongoose";
-import cors from "cors";
+import { v2 as cloudinary } from 'cloudinary';
+import dotenv from "dotenv";
+import authRoutes from "./routes/auth.routes.js";
+import userRoutes from "./routes/user.routes.js";
+import addressRoutes from "./routes/address.routes.js";
 import cookieParser from "cookie-parser";
-import User from "./model/user.js";
-import auth from "./middleware/auth.js";
+import { StatusCodes } from "http-status-codes";
+import cors from "cors";
 
-app.set("trust proxy", 1); // <-- important in production when using sameSite:'none' + secure cookies
-app.use(cookieParser());
-app.use(
-  cors({
-    origin: ["http://localhost:5173", "http://localhost:5174"],
-    credentials: true,
-  })
-);
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Credentials", "true");
-  next();
-});
+dotenv.config();
+const app = express();
 
-app.use((req, res, next) => {
-  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
-  res.setHeader('Cross-Origin-Embedder-Policy', 'unsafe-none');
-  next();
-});
-
-
-app.use(express.json());
+app.use(express.json({limit: "10mb"}));
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(cors({ origin: [process.env.FRONTEND_URL], credentials: true }));
 
-async function main() {
-  await mongoose
-    .connect(process.env.MONGODB)
-    .then(() => console.log("Connection successful"))
-    .catch((err) => console.log(err));
-}
-main();
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
+  api_key: process.env.CLOUDINARY_API_KEY, 
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+  secure: true // Ensures all generated URLs use HTTPS
+});
 
-import user from "./routes/user.js";
-import product from "./routes/productRoute.js";
-import category from "./routes/categoryRoute.js";
-import order from "./routes/orderRoute.js";
-import variant from "./routes/variantRoute.js";
-import media from "./routes/mediaRoute.js";
-
-
-app.use("/user", user);
-app.use('/api', product);
-app.use('/api', category);
-app.use('/api', variant);
-app.use('/api', order);
-app.use('/api', media);
+// Routes
+app.use("/user", authRoutes);
+app.use("/profile", userRoutes);
+app.use('/address', addressRoutes);
 
 
 app.get("/", (req, res) => {
-  res.send("Backend is running!");
-});
-
-app.get("/me", auth("user"), async (req, res) => {
-  const user = await User.findById(req.user._id).select(
-    "username email role status createdAt updatedAt"
-  );
-  if (!user) return res.status(404).json({ message: "User not found" });
-  return res.status(200).json({
-    message: "Welcome back!",
-    user: {
-      id: user._id,
-      username: user.username,
-      email: user.email,
-      role: user.role,
-    },
+  res.status(StatusCodes.OK).json({
+    message: "Welcome to the Author Backend API",
+    status: StatusCodes.OK,
   });
 });
 
-app.get("/admin", auth("admin"), async (req, res) => {
-  const admin = await User.findById(req.user._id);
-  console.log(admin);
-  res.send(admin);
-});
 
-app.use((err, req, res, next) => {
+app.use((err, req, res, next) => { 
   console.error("🔥 Error:", err);
-  const statusCode = err.statusCode || err.status || 500; // support both
+  const statusCode = err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR;
   const message = err.message || "Internal Server Error";
-  // Optional: map Mongo duplicate key error
-  if (err.code === 11000) {
-    return res.status(409).json({ error: "Email or username already in use" });
-  }
-  res.status(statusCode).json({ error: message });
+  res.status(statusCode).json({ message });
 });
 
-app.listen(port, () => {
-  console.log(`App is listening on ${port}`);
-});
+export default app;

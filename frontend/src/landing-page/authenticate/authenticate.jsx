@@ -1,112 +1,35 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { GoogleLogin } from "@react-oauth/google";
 import {
   Box,
-  Button,
   Typography,
   Avatar,
-  Link,
-  Alert,
-  FormControl,
-  OutlinedInput,
-  InputAdornment,
-  InputLabel,
   IconButton,
-  TextField,
-  CircularProgress,
   Divider,
   Fade,
 } from "@mui/material";
 import Modal from "@mui/material/Modal";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import CloseIcon from "@mui/icons-material/Close";
-import axios from "axios";
-import Grid from "@mui/material/Grid";
-import FacebookIcon from "@mui/icons-material/Facebook";
-import { useAuth } from "../AuthContext";
-import FacebookLogin from "@greatsumini/react-facebook-login";
-
-function CustomGoogleButton({ onSuccess, onError, }) {
-  return (
-    <GoogleLogin
-      onSuccess={onSuccess}
-      onError={onError}
-      useOneTap
-      text="continue_with" // "signin_with", "signup_with", "continue_with", "signin"
-    />
-  );
-}
-
-function FacebookAuthButton({ loading, handleClose, setUser, setAlert, navigate }) {
-  return (
-    <FacebookLogin
-      appId={import.meta.env.VITE_FACEBOOK_APP_ID}
-      onSuccess={async (response) => {
-        try {
-          const res = await axios.post(
-            `${import.meta.env.VITE_Backend_Url}/user/facebook/callback`,
-            { access_token: response.accessToken },
-            { withCredentials: true }
-          );
-
-          handleClose();
-          setUser(res.data.user);
-          setAlert({ type: "success", message: res.data.message });
-          navigate("/");
-        } catch (err) {
-          console.error("Facebook login error:", err);
-          setAlert({
-            type: "error",
-            message:
-              err.response?.data?.message ||
-              "Facebook Sign-In failed. Try again.",
-          });
-        }
-      }}
-      onFail={(err) => {
-        console.error("Facebook login failed:", err);
-        setAlert({ type: "error", message: "Facebook Sign-In failed." });
-      }}
-      render={({ onClick }) => (
-        <Button
-          onClick={onClick}
-          variant="outlined"
-          startIcon={<FacebookIcon sx={{ color: "#1877F2" }} />}
-          sx={{
-            borderColor: "#e0e0e0",
-            color: "#333",
-            textTransform: "none",
-            fontWeight: 500,
-            borderRadius: 1,
-            px: 2,
-            py: .8,
-            width: "100%",
-            mt: 1.5,
-          }}
-          disabled={loading}
-        >
-          <Box component="span"  sx={{ ml: { xs: "auto" }, mr: {xs:"auto"} }}>Continue with Facebook</Box>
-        </Button>
-      )}
-    />
-  );
-}
-
+import { useAuth } from "../../context/AuthContext";
+import Form from "./Form";
+import FacebookAuthButton from "./FacebookAuthButton";
+import CustomGoogleButton from "./CustomGoogleButton";
+import { authService } from "../../services/auth.service";
 
 function Authenticate({ open, onClose }) {
   const { setAlert, setUser } = useAuth();
   const navigate = useNavigate();
 
   const [mode, setMode] = useState("signin");
+  const [otp, setOtp] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     username: "",
     email: "",
     password: "",
+    otp: "",
   });
   const [error, setError] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
@@ -114,7 +37,7 @@ function Authenticate({ open, onClose }) {
   // Switch authentication modes
   const switchMode = (newMode) => {
     setMode(newMode);
-    setFormData({ username: "", email: "", password: "" });
+    setFormData({ username: "", email: "", password: "", otp: "" });
     setError(null);
     setFieldErrors({});
   };
@@ -185,27 +108,40 @@ function Authenticate({ open, onClose }) {
     setError(null);
 
     try {
-      const res = await axios.post(
-        `${import.meta.env.VITE_Backend_Url}/user/${mode}`,
-        formData,
-        { withCredentials: true }
-      );
-
-      // Success handling
-      setUser(res.data.user);
-      setAlert({ type: "success", message: res.data.message });
-      handleClose();
-
-      if (mode === "signin" || mode === "signup") {
+      if (otp) {
+        // STEP 2: VERIFY THE OTP
+        const response = await authService.verifyOtp({
+          email: formData.email,
+          code: formData.otp,
+        });
+        setUser(response.user);
+        setAlert({
+          type: "success",
+          message: "Account verified successfully!",
+        });
+        handleClose();
         navigate("/");
+      } else {
+        // STEP 1: INITIAL SIGNUP OR SIGNIN
+        const response = await authService.authenticate(mode, formData);
+
+        if (mode === "signup") {
+          // Switch to OTP view instead of logging in
+          setOtp(true);
+          setAlert({ type: "success", message: "OTP sent to your email!" });
+        } else {
+          // Standard Sign-in / Forgot flow
+          setUser(response.user);
+          setAlert({ type: "success", message: response.message });
+          handleClose();
+          if (mode === "signin") navigate("/");
+        }
       }
     } catch (err) {
       // Error handling
+      console.log(err);
       const errorMessage =
-        err.response?.data?.message ||
-        err.response?.data?.error ||
-        "An error occurred. Please try again.";
-
+        err.response?.data?.message || err.response?.data?.error;
       setError(errorMessage);
 
       // Handle specific field errors from backend
@@ -214,6 +150,7 @@ function Authenticate({ open, onClose }) {
       }
     } finally {
       setLoading(false);
+      setMode("signin");
     }
   };
 
@@ -224,7 +161,7 @@ function Authenticate({ open, onClose }) {
     transform: "translate(-50%, -50%)",
     bgcolor: "background.paper",
     boxShadow: 24,
-    maxHeight: "80vh",
+    maxHeight: "85vh",
     overflowY: "auto",
     borderRadius: 8,
     p: 4,
@@ -257,36 +194,6 @@ function Authenticate({ open, onClose }) {
     }
   };
 
-
-  // Google Login Success Handler
-  const handleGoogleSuccess = async (credentialResponse) => {
-    try {
-      const res = await axios.post(
-        `${import.meta.env.VITE_Backend_Url}/user/google/callback`,
-        { credential: credentialResponse.credential },
-        { withCredentials: true }
-      );
-
-      handleClose();
-      setUser(res.data.user);
-      setAlert({ type: "success", message: res.data.message });
-      navigate("/");
-    } catch (err) {
-      console.error("Google login error:", err);
-      setAlert({
-        type: "error",
-        message: err.response?.data?.message || "Google Sign-In failed.",
-      });
-    }
-  };
-
-  // Google Login Error Handler
-  const handleGoogleError = () => {
-    setAlert({
-      type: "error",
-      message: "Google Sign-In failed. Try again.",
-    });
-  };
   return (
     <Modal
       open={open}
@@ -353,21 +260,23 @@ function Authenticate({ open, onClose }) {
           </Box>
 
           {/* OAuth Buttons */}
-          {(mode === "signup" || mode === "signin") && (
+          {!otp && (mode === "signup" || mode === "signin") && (
             <>
               <Box sx={{ mb: 3 }}>
                 <CustomGoogleButton
-                  onSuccess={handleGoogleSuccess}
-                  onError={handleGoogleError}
+                  handleClose={handleClose}
+                  setUser={setUser}
+                  setAlert={setAlert}
+                  navigate={navigate}
                 />
 
-                <FacebookAuthButton
-    loading={loading}
-    handleClose={handleClose}
-    setUser={setUser}
-    setAlert={setAlert}
-    navigate={navigate}
-  />
+                {/* <FacebookAuthButton
+                  loading={loading}
+                  handleClose={handleClose}
+                  setUser={setUser}
+                  setAlert={setAlert}
+                  navigate={navigate}
+                /> */}
               </Box>
 
               <Divider sx={{ my: 3 }}>
@@ -379,205 +288,20 @@ function Authenticate({ open, onClose }) {
           )}
 
           {/* Form */}
-          <Box component="form" onSubmit={handleSubmit} noValidate>
-            <Grid container spacing={2}>
-              {mode === "signup" && (
-                <Grid size={{ xs: 12 }}>
-                  <TextField
-                    fullWidth
-                    label="Full Name"
-                    name="username"
-                    value={formData.username}
-                    onChange={handleChange}
-                    error={!!fieldErrors.username}
-                    helperText={fieldErrors.username}
-                    disabled={loading}
-                    autoComplete="name"
-                    required
-                  />
-                </Grid>
-              )}
-
-              <Grid size={{ xs: 12 }}>
-                <TextField
-                  fullWidth
-                  label="Email Address"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  error={!!fieldErrors.email}
-                  helperText={fieldErrors.email}
-                  disabled={loading}
-                  autoComplete="email"
-                  required
-                />
-              </Grid>
-
-              {mode !== "forgot" && (
-                <Grid size={{ xs: 12 }}>
-                  <FormControl
-                    variant="outlined"
-                    fullWidth
-                    error={!!fieldErrors.password}
-                  >
-                    <InputLabel required>Password</InputLabel>
-                    <OutlinedInput
-                      type={showPassword ? "text" : "password"}
-                      name="password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      disabled={loading}
-                      autoComplete={
-                        mode === "signup" ? "new-password" : "current-password"
-                      }
-                      label="Password"
-                      endAdornment={
-                        <InputAdornment position="end">
-                          <IconButton
-                            onClick={handleClickShowPassword}
-                            onMouseDown={handleMouseDownPassword}
-                            edge="end"
-                            disabled={loading}
-                            aria-label="toggle password visibility"
-                          >
-                            {showPassword ? <VisibilityOff /> : <Visibility />}
-                          </IconButton>
-                        </InputAdornment>
-                      }
-                    />
-                    {fieldErrors.password && (
-                      <Typography
-                        variant="caption"
-                        color="error"
-                        sx={{ mt: 0.5, ml: 1.75 }}
-                      >
-                        {fieldErrors.password}
-                      </Typography>
-                    )}
-                  </FormControl>
-                </Grid>
-              )}
-            </Grid>
-
-            {/* Error Alert */}
-            {error && (
-              <Alert severity="error" sx={{ mt: 2 }}>
-                {error}
-              </Alert>
-            )}
-
-            {/* Submit Button */}
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              sx={{
-                mt: 3,
-                mb: 2,
-                height: 44,
-                bgcolor: "#F97316",
-                textTransform: "none",
-                fontSize: "1rem",
-                fontWeight: 600,
-                "&:hover": {
-                  bgcolor: "#ea580c",
-                },
-              }}
-              disabled={loading}
-            >
-              {loading ? (
-                <CircularProgress size={24} sx={{ color: "white" }} />
-              ) : mode === "signup" ? (
-                "Create Account"
-              ) : mode === "signin" ? (
-                "Sign In"
-              ) : (
-                "Send Reset Link"
-              )}
-            </Button>
-
-            {/* Switch Mode Links */}
-            <Box sx={{ textAlign: "center", mt: 2 }}>
-              {mode === "signin" && (
-                <>
-                  <Box sx={{ display: "flex", justifyContent: "center" }}>
-                    <Link
-                      component="button"
-                      type="button"
-                      variant="body2"
-                      onClick={() => switchMode("forgot")}
-                      disabled={loading}
-                      sx={{
-                        display: "block",
-                        mb: 1,
-                        color: "#F97316",
-                        textDecoration: "none",
-                        "&:hover": { textDecoration: "underline" },
-                      }}
-                    >
-                      Forgot your password?
-                    </Link>
-                  </Box>
-                  <Typography variant="body2" color="text.secondary">
-                    Don't have an account?{" "}
-                    <Link
-                      component="button"
-                      type="button"
-                      onClick={() => switchMode("signup")}
-                      disabled={loading}
-                      sx={{
-                        color: "#F97316",
-                        fontWeight: 600,
-                        textDecoration: "none",
-                        "&:hover": { textDecoration: "underline" },
-                      }}
-                    >
-                      Sign up
-                    </Link>
-                  </Typography>
-                </>
-              )}
-
-              {mode === "signup" && (
-                <Typography variant="body2" color="text.secondary">
-                  Already have an account?{" "}
-                  <Link
-                    component="button"
-                    type="button"
-                    onClick={() => switchMode("signin")}
-                    disabled={loading}
-                    sx={{
-                      color: "#F97316",
-                      fontWeight: 600,
-                      textDecoration: "none",
-                      "&:hover": { textDecoration: "underline" },
-                    }}
-                  >
-                    Sign in
-                  </Link>
-                </Typography>
-              )}
-
-              {mode === "forgot" && (
-                <Link
-                  component="button"
-                  type="button"
-                  variant="body2"
-                  onClick={() => switchMode("signin")}
-                  disabled={loading}
-                  sx={{
-                    color: "#F97316",
-                    fontWeight: 600,
-                    textDecoration: "none",
-                    "&:hover": { textDecoration: "underline" },
-                  }}
-                >
-                  ← Back to Sign In
-                </Link>
-              )}
-            </Box>
-          </Box>
+          <Form
+            otp={otp}
+            mode={mode}
+            handleSubmit={handleSubmit}
+            formData={formData}
+            handleChange={handleChange}
+            fieldErrors={fieldErrors}
+            loading={loading}
+            showPassword={showPassword}
+            handleClickShowPassword={handleClickShowPassword}
+            handleMouseDownPassword={handleMouseDownPassword}
+            error={error}
+            switchMode={switchMode}
+          />
         </Box>
       </Fade>
     </Modal>

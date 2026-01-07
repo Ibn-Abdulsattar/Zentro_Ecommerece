@@ -168,14 +168,14 @@ const TrendingCard = ({ p }) => {
 
 // Main Section
 export default function Trending() {
-  const [view, setView] = useState("carousel");
+  const [view, setView] = useState("grid");
 
   return (
     <Box sx={{ padding: 6 }}>
       {/* Header */}
       <Box display="flex" justifyContent="space-between" mb={5}>
         <Typography variant="h4" fontWeight="800">
-          🔥{" "}
+          {/* 🔥{" "} */}
           <span style={{ borderBottom: "5px solid #F97316" }}>
             Trending Products
           </span>

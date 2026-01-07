@@ -14,12 +14,12 @@ import Shipping from "./landing-page/company/shipping";
 import Terms from "./landing-page/company/terms";
 import Dashboard from "./landing-page/dashboard/Dashboard";
 import Account from "./landing-page/account/Account";
-import { AuthProvider } from "./landing-page/AuthContext";
-import NotFound from "./landing-page/NotFound";
-import Navbar from "./landing-page/navbar.jsx";
-import Footer from "./landing-page/footer.jsx";
-import GlobalAlert from "./landing-page/GlobalAlert.jsx";
 import ResetPassword from "./landing-page/authenticate/ResetPassword.jsx";
+import Navbar from "./component/navbar.jsx";
+import GlobalAlert from "./component/GlobalAlert.jsx";
+import NotFound from "./component/NotFound.jsx";
+import { AuthProvider } from "./context/AuthContext.jsx";
+import Footer from "./component/footer.jsx";
 
 
 function App() {
