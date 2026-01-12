@@ -1,5 +1,3 @@
-// CartPage.js
-import React from "react";
 import { useCart } from "./cartContext";
 import {
   Grid,
@@ -13,9 +11,36 @@ import {
   Button,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import axios from "axios";
+import { useAuth } from "../../context/AuthContext";
 
 const CartPage = () => {
+  const { setAlert } = useAuth();
   const { cart, updateQuantity, removeItem, getTotal } = useCart();
+
+  const handleCheckout = async () => {
+    try {
+      await axios
+        .post(
+          `${import.meta.env.VITE_Backend_Url}/payment/create-checkout-session`,
+          { cartItems: cart }
+        )
+        .then((response) => {
+          if (response.data.url) {
+            window.location.href = response.data.url;
+          }
+        });
+      setAlert({
+        type: "success",
+        message: "Redirecting to checkout...",
+      });
+    } catch (error) {
+      setAlert({
+        type: "error",
+        message: error.message || "Failed to initiate checkout.",
+      });
+    }
+  };
 
   return (
     <Box sx={{ mt: 6, px: { xs: 2, md: 4 } }}>
@@ -179,6 +204,7 @@ const CartPage = () => {
             </Box>
 
             <Button
+              onClick={handleCheckout}
               variant="contained"
               fullWidth
               size="large"

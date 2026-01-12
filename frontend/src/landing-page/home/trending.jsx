@@ -148,7 +148,7 @@ const TrendingCard = ({ p }) => {
         </Typography>
 
         {/* Buttons */}
-        <Box sx={{ display: "flex", gap: 1, mt: 2 }}>
+        <Box sx={{ display: "flex", gap: 1, mt: 2, flexDirection: "column" }}>
           <Button
             onClick={() => navigate("/checkout")}
             variant="contained"

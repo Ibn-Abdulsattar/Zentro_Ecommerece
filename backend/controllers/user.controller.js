@@ -1,6 +1,6 @@
 import { StatusCodes } from "http-status-codes";
 import User from "../models/User.js";
-import { v2 as cloudinary } from "cloudinary";
+import Cloudinary from "../services/cloudinary.js";
 
 export const profile = async (req, res) => {
   const user = await User.findByPk(req.user.user_id, {
@@ -29,20 +29,10 @@ export const updateProfile = async (req, res) => {
 
   let avatar_url = req.user.avatar_url; // Default to existing photo
 
+  const file = req.file;
   if (req.file) {
     try {
-      const result = await new Promise((resolve, reject) => {
-        // Create pipeline one end of pipe is connected to cloudinary server
-        const stream = cloudinary.uploader.upload_stream(
-          { folder: "zentro_profile" },
-          (error, uploadResult) => {
-            if (error) reject(error);
-            else resolve(uploadResult);
-          }
-        );
-
-        stream.end(req.file.buffer); // Push buffer to cloudinary
-      });
+      const result = await Cloudinary(file);
 
       avatar_url = result.secure_url; // Cloud_link
       console.log("result.secure_url =", result.secure_url);

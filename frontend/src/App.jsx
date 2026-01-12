@@ -20,19 +20,22 @@ import GlobalAlert from "./component/GlobalAlert.jsx";
 import NotFound from "./component/NotFound.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import Footer from "./component/footer.jsx";
-
+import Success from "./landing-page/checkout/Success.jsx";
+import CancelPage from "./landing-page/checkout/Cancel.jsx";
 
 function App() {
   return (
     <>
       <AuthProvider>
         <Navbar />
-        <GlobalAlert/>
+        <GlobalAlert />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/productListing" element={<ProductListing />} />
           <Route path="/productDetail" element={<ProductrDetail />} />
           <Route path="/checkout" element={<Checkout />} />
+          <Route path="/success" element={<Success />} />
+          <Route path="/cancel" element={<CancelPage />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
@@ -43,7 +46,10 @@ function App() {
           <Route path="/shipping" element={<Shipping />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/reset-password/:resetToken" element={<ResetPassword />} />
+          <Route
+            path="/reset-password/:resetToken"
+            element={<ResetPassword />}
+          />
           <Route path="/*" element={<NotFound />} />
         </Routes>
         <Footer />
